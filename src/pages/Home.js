@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -12,7 +13,6 @@ function Home() {
 
   const { user, toggleFavorite } = useAuth();
 
-  // Search recipes
   const searchRecipes = async (recipeName = search) => {
     if (!recipeName.trim()) {
       setError("Please enter a recipe name");
@@ -27,6 +27,7 @@ function Home() {
       const response = await fetch(
         `${API_URL}/search.php?s=${encodeURIComponent(recipeName)}`
       );
+
       const data = await response.json();
 
       if (data.meals) {
@@ -41,16 +42,16 @@ function Home() {
     }
   };
 
-  // Load default recipes
   useEffect(() => {
     searchRecipes("chicken");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // View full recipe
   const viewRecipe = async (id) => {
     try {
       const response = await fetch(`${API_URL}/lookup.php?i=${id}`);
       const data = await response.json();
+
       if (data.meals) {
         setSelectedRecipe(data.meals[0]);
       }
@@ -72,6 +73,7 @@ function Home() {
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C1810]">
             Discover Recipes
           </h1>
+
           <p className="text-[#6B5E57] mt-2 text-lg">
             Search and explore delicious recipes from around the world
           </p>
@@ -84,10 +86,13 @@ function Home() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && searchRecipes()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && searchRecipes()
+              }
               placeholder="Search chicken, pasta, noodles, pizza..."
               className="flex-1 border border-[#D9CBC3] rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#C45C26] focus:border-transparent"
             />
+
             <button
               onClick={() => searchRecipes()}
               className="bg-[#C45C26] hover:bg-[#A34A1E] text-white px-8 py-3 rounded-lg font-medium transition"
@@ -108,7 +113,10 @@ function Home() {
         {loading && (
           <div className="text-center py-16">
             <div className="inline-block w-12 h-12 border-4 border-[#EDE4DE] border-t-[#C45C26] rounded-full animate-spin"></div>
-            <p className="mt-4 text-[#6B5E57]">Finding delicious recipes...</p>
+
+            <p className="mt-4 text-[#6B5E57]">
+              Finding delicious recipes...
+            </p>
           </div>
         )}
 
@@ -119,8 +127,10 @@ function Home() {
               <h2 className="text-2xl font-semibold text-[#2C1810]">
                 Recipe Results
               </h2>
+
               <p className="text-[#6B5E57]">
-                {recipes.length} recipe{recipes.length !== 1 ? "s" : ""} found
+                {recipes.length} recipe
+                {recipes.length !== 1 ? "s" : ""} found
               </p>
             </div>
 
@@ -145,6 +155,7 @@ function Home() {
                       <span className="bg-[#F5EAE4] text-[#C45C26] px-3 py-1 rounded-full text-sm font-medium">
                         {recipe.strCategory}
                       </span>
+
                       <span className="bg-[#F0F4F3] text-[#2C1810] px-3 py-1 rounded-full text-sm font-medium">
                         {recipe.strArea}
                       </span>
@@ -181,12 +192,14 @@ function Home() {
       {selectedRecipe && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl">
+
             <div className="relative">
               <img
                 src={selectedRecipe.strMealThumb}
                 alt={selectedRecipe.strMeal}
                 className="w-full h-64 md:h-80 object-cover rounded-t-2xl"
               />
+
               <button
                 onClick={() => setSelectedRecipe(null)}
                 className="absolute top-4 right-4 bg-white w-11 h-11 rounded-full text-2xl font-bold shadow-md hover:bg-gray-100 transition"
@@ -204,6 +217,7 @@ function Home() {
                 <span className="bg-[#F5EAE4] text-[#C45C26] px-4 py-1.5 rounded-full text-sm font-medium">
                   {selectedRecipe.strCategory}
                 </span>
+
                 <span className="bg-[#F0F4F3] text-[#2C1810] px-4 py-1.5 rounded-full text-sm font-medium">
                   {selectedRecipe.strArea}
                 </span>
@@ -212,11 +226,18 @@ function Home() {
               <h3 className="text-xl font-semibold text-[#2C1810] mb-4">
                 Ingredients
               </h3>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
                 {Array.from({ length: 20 }, (_, i) => {
-                  const ingredient = selectedRecipe[`strIngredient${i + 1}`];
-                  const measure = selectedRecipe[`strMeasure${i + 1}`];
-                  if (!ingredient || ingredient.trim() === "") return null;
+                  const ingredient =
+                    selectedRecipe[`strIngredient${i + 1}`];
+
+                  const measure =
+                    selectedRecipe[`strMeasure${i + 1}`];
+
+                  if (!ingredient || ingredient.trim() === "") {
+                    return null;
+                  }
 
                   return (
                     <div
@@ -226,8 +247,12 @@ function Home() {
                       <span className="font-medium text-[#2C1810]">
                         {ingredient}
                       </span>
+
                       {measure && (
-                        <span className="text-[#6B5E57]"> — {measure}</span>
+                        <span className="text-[#6B5E57]">
+                          {" "}
+                          — {measure}
+                        </span>
                       )}
                     </div>
                   );
@@ -237,6 +262,7 @@ function Home() {
               <h3 className="text-xl font-semibold text-[#2C1810] mb-4">
                 Instructions
               </h3>
+
               <p className="text-[#4A3F39] leading-8 whitespace-pre-line mb-8">
                 {selectedRecipe.strInstructions}
               </p>
