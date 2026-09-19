@@ -12,7 +12,6 @@ function Home() {
 
   const { user, toggleFavorite } = useAuth();
 
-  // Search recipes
   const searchRecipes = async (recipeName = search) => {
     if (!recipeName.trim()) {
       setError("Please enter a recipe name");
@@ -41,16 +40,38 @@ function Home() {
     }
   };
 
-  // Load default recipes
   useEffect(() => {
-    searchRecipes("chicken");
+    const fetchDefaultRecipes = async () => {
+      setLoading(true);
+      setError("");
+      setRecipes([]);
+
+      try {
+        const response = await fetch(
+          `${API_URL}/search.php?s=chicken`
+        );
+        const data = await response.json();
+
+        if (data.meals) {
+          setRecipes(data.meals);
+        } else {
+          setError("No recipes found. Try another name.");
+        }
+      } catch (err) {
+        setError("Something went wrong. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDefaultRecipes();
   }, []);
 
-  // View full recipe
   const viewRecipe = async (id) => {
     try {
       const response = await fetch(`${API_URL}/lookup.php?i=${id}`);
       const data = await response.json();
+
       if (data.meals) {
         setSelectedRecipe(data.meals[0]);
       }
@@ -67,7 +88,6 @@ function Home() {
     <div className="min-h-screen bg-[#FDF8F5] pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
 
-        {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl md:text-4xl font-bold text-[#2C1810]">
             Discover Recipes
@@ -77,7 +97,6 @@ function Home() {
           </p>
         </div>
 
-        {/* Search Box */}
         <div className="bg-white rounded-xl shadow-sm border border-[#EDE4DE] p-6 mb-10">
           <div className="flex flex-col sm:flex-row gap-3">
             <input
@@ -97,22 +116,21 @@ function Home() {
           </div>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="mb-8 bg-[#FDF0EB] text-[#C45C26] p-4 rounded-lg text-center font-medium">
             {error}
           </div>
         )}
 
-        {/* Loading */}
         {loading && (
           <div className="text-center py-16">
             <div className="inline-block w-12 h-12 border-4 border-[#EDE4DE] border-t-[#C45C26] rounded-full animate-spin"></div>
-            <p className="mt-4 text-[#6B5E57]">Finding delicious recipes...</p>
+            <p className="mt-4 text-[#6B5E57]">
+              Finding delicious recipes...
+            </p>
           </div>
         )}
 
-        {/* Recipe Results */}
         {!loading && recipes.length > 0 && (
           <div>
             <div className="flex items-center justify-between mb-6">
@@ -177,7 +195,6 @@ function Home() {
         )}
       </div>
 
-      {/* Recipe Details Modal */}
       {selectedRecipe && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl">
@@ -187,6 +204,7 @@ function Home() {
                 alt={selectedRecipe.strMeal}
                 className="w-full h-64 md:h-80 object-cover rounded-t-2xl"
               />
+
               <button
                 onClick={() => setSelectedRecipe(null)}
                 className="absolute top-4 right-4 bg-white w-11 h-11 rounded-full text-2xl font-bold shadow-md hover:bg-gray-100 transition"
@@ -212,11 +230,15 @@ function Home() {
               <h3 className="text-xl font-semibold text-[#2C1810] mb-4">
                 Ingredients
               </h3>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-10">
                 {Array.from({ length: 20 }, (_, i) => {
                   const ingredient = selectedRecipe[`strIngredient${i + 1}`];
                   const measure = selectedRecipe[`strMeasure${i + 1}`];
-                  if (!ingredient || ingredient.trim() === "") return null;
+
+                  if (!ingredient || ingredient.trim() === "") {
+                    return null;
+                  }
 
                   return (
                     <div
@@ -226,8 +248,12 @@ function Home() {
                       <span className="font-medium text-[#2C1810]">
                         {ingredient}
                       </span>
+
                       {measure && (
-                        <span className="text-[#6B5E57]"> — {measure}</span>
+                        <span className="text-[#6B5E57]">
+                          {" "}
+                          — {measure}
+                        </span>
                       )}
                     </div>
                   );
@@ -237,6 +263,7 @@ function Home() {
               <h3 className="text-xl font-semibold text-[#2C1810] mb-4">
                 Instructions
               </h3>
+
               <p className="text-[#4A3F39] leading-8 whitespace-pre-line mb-8">
                 {selectedRecipe.strInstructions}
               </p>
